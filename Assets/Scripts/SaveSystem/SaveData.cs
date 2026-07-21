@@ -1,14 +1,29 @@
 using UnityEngine;
+using System.IO;
+using System.Text.Json;
+using NUnit.Framework;
 
 public class SaveData
 {
+    
+    private string filePath;
+    public SaveData()
+    {
+        filePath = Path.Combine(Application.persistentDataPath, "characterData.json");
+        
+    }
+
     public void SaveCharacterData(CharacterData characterData)
     {
-        PlayerPrefs.SetString("CharacterName", characterData.characterName);
-        PlayerPrefs.SetInt("CharacterLevel", characterData.characterLevel);
-        PlayerPrefs.SetFloat("CharacterHealth", characterData.characterHealth);
-        PlayerPrefs.SetFloat("CharacterMana", characterData.characterMana);
-        PlayerPrefs.SetInt("CharacterExperience", characterData.characterExperience);
-        PlayerPrefs.Save();
+        string json = JsonSerializer.Serialize(characterData, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        
+        File.WriteAllText(filePath, json);
+        
+        Debug.Log("Saved under"  + filePath);
     }
+
 }
+
