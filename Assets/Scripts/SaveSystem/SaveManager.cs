@@ -12,11 +12,11 @@ public class SaveManager : MonoBehaviour
 
     public void loadCharacterData()
     {
-        string characterName = PlayerPrefs.GetString("CharacterName", "DefaultName");
-        int characterLevel = PlayerPrefs.GetInt("CharacterLevel", 1);
-        float characterHealth = PlayerPrefs.GetFloat("CharacterHealth", 100f);
-        float characterMana = PlayerPrefs.GetFloat("CharacterMana", 50f);
-        int characterExperience = PlayerPrefs.GetInt("CharacterExperience", 0);
+        string characterName = saveData.characterName;
+        int characterLevel = saveData.characterLevel;
+        float characterHealth = saveData.characterHealth;
+        float characterMana = saveData.characterMana;
+        int characterExperience = saveData.characterExperience;
 
         CharacterData characterData = new CharacterData
         {
