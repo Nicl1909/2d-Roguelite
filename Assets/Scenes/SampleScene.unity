@@ -365,9 +365,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   rigidbody: {fileID: 599225878}
-  horizontal: 0
-  vertical: 0
-  speed: 2
+  speed: 4
+  canDash: 1
+  isDashing: 0
+  dashingPower: 65
+  dashingTime: 0.1
+  dashingCooldown: 1
 --- !u!50 &599225878
 Rigidbody2D:
   serializedVersion: 5
