@@ -261,6 +261,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bceb388a346cee4489b384e4a0910a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Attack
+  isAttacking: 0
+  canAttack: 1
+  attackTime: 1
+  attackCoodown: 0.3
   transform: {fileID: 441771152}
 --- !u!1 &519420028
 GameObject:
