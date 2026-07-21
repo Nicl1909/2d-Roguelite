@@ -265,6 +265,10 @@ MonoBehaviour:
   canAttack: 1
   attackTime: 1
   attackCoodown: 0.3
+  isAbilitying: 0
+  canAbility: 1
+  abilityTime: 0.1
+  abilityCooldown: 10
   transform: {fileID: 441771152}
 --- !u!1 &519420028
 GameObject:
@@ -513,9 +517,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   rigidbody: {fileID: 599225878}
+  attack: {fileID: 441771155}
   speed: 4
-  canDash: 1
-  isDashing: 0
   dashingPower: 65
   dashingTime: 0.1
   dashingCooldown: 1

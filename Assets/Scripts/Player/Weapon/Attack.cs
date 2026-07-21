@@ -8,6 +8,11 @@ public class Attack : MonoBehaviour
     public float attackTime;
     public float attackCoodown;
 
+    public bool isAbilitying;
+    public bool canAbility = true;
+    public float abilityTime;
+    public float abilityCooldown;
+
     public Transform transform;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -20,9 +25,13 @@ public class Attack : MonoBehaviour
     void Update()
     {
         LAMouse();
-        if(Input.GetMouseButtonDown(0) && canAttack)
+        if(Input.GetMouseButtonDown(0) && canAttack && !isAbilitying)
         {
             StartCoroutine(Attacking());
+        }
+        if (Input.GetMouseButtonDown(1) && canAbility && !isAttacking)
+        {
+            StartCoroutine(Abilitying());
         }
     }
 
@@ -42,11 +51,27 @@ public class Attack : MonoBehaviour
         canAttack = true;
     }
 
+    private IEnumerator Abilitying()
+    {
+        canAbility = false;
+        isAbilitying = true;
+
+        yield return new WaitForSeconds(abilityTime);
+        isAbilitying = false;
+        yield return new WaitForSeconds(abilityCooldown);
+        canAbility = true;
+    }
+
     private void LAMouse()
     {
         Vector2 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         transform.rotation = rotation;
+    }
+
+    public bool GetAttacking()
+    {
+        return isAttacking;
     }
 }

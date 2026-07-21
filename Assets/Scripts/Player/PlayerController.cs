@@ -4,6 +4,8 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
     public Rigidbody2D rigidbody;
+    public Attack attack;
+
     private float horizontal;
     private float vertical;
     public float speed;
@@ -23,7 +25,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isDashing)
+
+        if (isDashing || attack.GetAttacking())
         {
             return;
         }
@@ -40,6 +43,11 @@ public class PlayerController : MonoBehaviour
     {
         if (isDashing)
         {
+            return;
+        }
+        if(attack.GetAttacking())
+        {
+            rigidbody.linearVelocity = new Vector2(0, 0);
             return;
         }
         rigidbody.linearVelocity = new Vector2(horizontal, vertical);
