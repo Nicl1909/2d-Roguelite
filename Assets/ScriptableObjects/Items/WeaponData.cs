@@ -24,7 +24,8 @@ public class WeaponData : ScriptableObject
         Bow,
         Staff,
         Dagger,
-        Axe
+        Axe,
+        Spear
     }
     public enum DamageType
 
