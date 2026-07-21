@@ -8,8 +8,8 @@ public class PlayerController : MonoBehaviour
     private float vertical;
     public float speed;
 
-    public bool canDash = true;
-    public bool isDashing;
+    private bool canDash = true;
+    private bool isDashing;
     public float dashingPower;
     public float dashingTime;
     public float dashingCooldown;
