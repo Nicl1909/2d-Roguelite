@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
             rigidbody.linearVelocity = new Vector2(0, 0);
             return;
         }
+
         rigidbody.linearVelocity = new Vector2(horizontal, vertical);
     }
 
