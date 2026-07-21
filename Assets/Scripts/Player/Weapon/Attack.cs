@@ -13,12 +13,13 @@ public class Attack : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        transform = this.transform;
     }
 
     // Update is called once per frame
     void Update()
     {
+        LAMouse();
         if(Input.GetMouseButtonDown(0) && canAttack)
         {
             StartCoroutine(Attacking());
@@ -39,5 +40,13 @@ public class Attack : MonoBehaviour
         isAttacking = false;
         yield return new WaitForSeconds(attackCoodown);
         canAttack = true;
+    }
+
+    private void LAMouse()
+    {
+        Vector2 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        transform.rotation = rotation;
     }
 }
