@@ -19,9 +19,6 @@ public class Attack : MonoBehaviour
 
     public void Rotation(float rot)
     {
-        Debug.Log(rot);
-        //Quaternion target = Quaternion.Euler(0, 0, rot);
-        //transform.rotation = Quaternion.Slerp(transform.rotation, target, Time.deltaTime);
         transform.eulerAngles = new Vector3(0,0,rot);
     }
 }
