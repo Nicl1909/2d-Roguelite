@@ -1,13 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     public Rigidbody2D rigidbody;
     public Attack attack;
-
-    private float horizontal;
-    private float vertical;
+    
     public float speed;
 
     private bool canDash = true;
@@ -16,23 +15,29 @@ public class PlayerController : MonoBehaviour
     public float dashingTime;
     public float dashingCooldown;
 
+    private InputAction inputActionMove;
+    private InputAction inputActionDash;
+    
+    private Vector2 lastMoveVector;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        inputActionMove = InputSystem.actions.FindAction("Move");
+        inputActionDash = InputSystem.actions.FindAction("Sprint");
     }
 
     // Update is called once per frame
     void Update()
     {
 
+        var dashInput = inputActionDash.IsPressed();
         if (isDashing || attack.GetAttacking())
         {
             return;
         }
-        horizontal = Input.GetAxisRaw("Horizontal") * speed;
-        vertical = Input.GetAxisRaw("Vertical") * speed;
-        if(Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+        
+        if(dashInput && canDash)
         {
             StartCoroutine(Dash());
         }
@@ -50,15 +55,20 @@ public class PlayerController : MonoBehaviour
             rigidbody.linearVelocity = new Vector2(0, 0);
             return;
         }
-
-        rigidbody.linearVelocity = new Vector2(horizontal, vertical);
+        
+        var moveVector = inputActionMove.ReadValue<Vector2>();
+        if (moveVector.x != 0 || moveVector.y != 0)
+        {
+            lastMoveVector = moveVector;
+        }
+        rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
     }
 
     private IEnumerator Dash()
     {
         canDash = false;
         isDashing = true;
-        rigidbody.linearVelocity = new Vector2(dashingPower * (horizontal / (Mathf.Abs(horizontal) + Mathf.Abs(vertical))), dashingPower * (vertical / (Mathf.Abs(horizontal) + Mathf.Abs(vertical))));
+        rigidbody.linearVelocity = lastMoveVector * dashingPower;
         yield return new WaitForSeconds(dashingTime);
         isDashing = false;
         yield return new WaitForSeconds(dashingCooldown);
