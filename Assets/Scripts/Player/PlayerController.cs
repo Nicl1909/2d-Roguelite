@@ -33,8 +33,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         var dashInput = inputActionDash.IsPressed();
+        
         if (isDashing || attack.GetAttacking())
         {
             return;
@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour
         }
         
         var moveVector = inputActionMove.ReadValue<Vector2>();
+        
         if (moveVector.x != 0 || moveVector.y != 0)
         {
             lastMoveVector = moveVector;
