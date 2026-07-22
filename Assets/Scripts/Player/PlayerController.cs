@@ -73,6 +73,34 @@ public class PlayerController : MonoBehaviour
         rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
     }
 
+    private void moveAnimation(Vector2 direction)
+    {
+        float horizontalPercentage = Mathf.Abs(direction.x) / (Mathf.Abs(direction.x) + Mathf.Abs(direction.y));
+        float verticalPercentage = Mathf.Abs(direction.y) / (Mathf.Abs(direction.x) + Mathf.Abs(direction.y));
+        if (horizontalPercentage >= verticalPercentage)
+        {
+            if (direction.x > 0)
+            {
+                
+            }
+            else
+            {
+                
+            }
+        }
+        else
+        {
+            if (direction.y > 0)
+            {
+                
+            }
+            else
+            {
+                
+            }
+        }
+    }
+
     private IEnumerator Dash()
     {
         canDash = false;
