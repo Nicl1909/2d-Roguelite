@@ -97,9 +97,9 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     public void OnKilled(GameObject source)
     {
-        if (XPService.Instance != null)
+        if (XPHandler.Instance != null)
         {
-            XPService.Instance.Award(Data.xpReward, transform.position);
+            XPHandler.Instance.Award(Data.xpReward, transform.position);
         }
         if (LootService.Instance != null)
         {

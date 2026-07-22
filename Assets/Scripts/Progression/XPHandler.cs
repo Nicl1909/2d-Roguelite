@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class XPService : MonoBehaviour
+public class XPHandler : MonoBehaviour
 {
-    public static XPService Instance { get; private set; }
+    public static XPHandler Instance { get; private set; }
 
     void Awake()
     {
