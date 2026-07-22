@@ -41,22 +41,35 @@ Assets/
     Enemies/      EnemyController, EnemyFactory, EnemyContactDamage,
                   IEnemyBehavior, EnemyArchetype, TargetingService,
                   ChargerBehavior, ShooterBehavior, SummonerBehavior, TurretBehavior
-    Inventory/    LootService  (Phase 4 stub)
-    Progression/  XPService    (Phase 5 stub)
-    SaveSystem/   SaveManager   (single file; System.Text.Json inside)
-  ScriptableObjects/   EnemyData, Items/WeaponData, Items/ArmorData
+    Dungeon/      Room, RoomSet, BossData, DifficultyCurve, WaveRunner,
+                  BossController, RoomDirector, DungeonEvents
+    Inventory/    LootService            (Phase 4 stub)
+    Progression/  XPHandler              (exists, forwards XP → GameManager)
+    SaveSystem/   SaveManager            (System.Text.Json inside)
+  ScriptableObjects/
+    EnemyData.cs
+    Items/        WeaponData.cs, ArmorData.cs, Weapon.asset (instance example)
+    DifficultyCurve.cs, RoomSet.cs (created via CreateAssetMenu)
   Settings/       URP renderer, input actions, volume profile
 ```
 
 ## Save system — gotcha
 
-The repo uses **`System.Text.Json`** (not Unity's `JsonUtility`). Both work; agents default to `JsonUtility`. Don't "modernize" the save to `JsonUtility` without asking.
+The repo uses **`System.Text.Json`** (not Unity's `JsonUtility`). Don't "modernize" to `JsonUtility` without asking.
 
-API surface (single class now):
-- `SaveManager.LoadCharacterData()` — returns `CharacterData` or `null` if no save exists
-- `SaveManager.SaveCharacterData(CharacterData)` — writes to `Application.persistentDataPath/characterData.json`
-- `SaveManager.HasSave()` / `DeleteSave()` — convenience
-- `GameManager.Instance` auto-resolves `SaveManager` via `FindFirstObjectByType<SaveManager>()` if not wired in the Inspector.
+API surface:
+- `SaveManager.LoadCharacterData()` → `CharacterData?` (null if no save / unreadable / malformed)
+- `SaveManager.SaveCharacterData(CharacterData) → bool` (returns `false` if write failed)
+- `SaveManager.HasSave() → bool`, `SaveManager.DeleteSave() → bool`
+- IO errors (`UnauthorizedAccessException`, `IOException`) are caught and logged via `Debug.LogError` — never thrown further
+- `GameManager.Instance` auto-resolves `SaveManager` via `FindFirstObjectByType<SaveManager>()` if not wired in the Inspector
+
+## Robustness conventions (added mid-Phase-3)
+
+- Every `*.MonoBehaviour*` script does null-checks for service singletons (`XPHandler.Instance`, `LootService.Instance`, `GameManager.Instance`) and for `EnemyData` fields
+- `Object.Destroy(gameObject)` is wrapped in try/catch — Unity throws NoneReference if the GO was already destroyed
+- Errors are logged via `Debug.LogError` with the message, never re-thrown — runs continue even if a single system fails
+- Adding services / subscribers without an Inspector entry is OK: `FindFirstObjectByType` + null-check is the default pattern
 
 ## Style / workflow conventions
 

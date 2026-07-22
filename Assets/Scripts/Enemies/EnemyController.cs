@@ -23,16 +23,38 @@ public class EnemyController : MonoBehaviour, IDamageable
         health = GetComponent<Health>();
     }
 
-    public void Initialize(EnemyData data, RunRng runRng)
+    public bool Initialize(EnemyData data, RunRng runRng)
     {
+        if (data == null)
+        {
+            Debug.LogError("EnemyController.Initialize called with null EnemyData.");
+            return false;
+        }
+
         Data = data;
-        AddToSummon = data != null ? data.summonData : null;
-        RunRng = runRng != null ? runRng : (GameManager.Instance != null && GameManager.Instance.CurrentRun != null ? GameManager.Instance.CurrentRun.rng : new RunRng(0));
+        AddToSummon = data.summonData;
+        RunRng = runRng != null
+            ? runRng
+            : (GameManager.Instance != null && GameManager.Instance.CurrentRun != null
+                ? GameManager.Instance.CurrentRun.rng
+                : new RunRng(0));
+
         behavior = ResolveBehavior(data.archetypeId);
-        if (health != null) health.Configure(data.maxHealth, 0.25f);
-        gameObject.tag = "Enemy";
-        attackTimer = data.attackInterval;
-        if (behavior != null) behavior.OnSpawned(this, data);
+
+        if (health != null)
+        {
+            health.Configure(data.maxHealth, 0.25f);
+        }
+
+        try { gameObject.tag = "Enemy"; } catch { }
+
+        attackTimer = Mathf.Max(0f, data.attackInterval);
+
+        if (behavior != null)
+        {
+            try { behavior.OnSpawned(this, data); } catch (System.Exception e) { Debug.LogError($"Behavior OnSpawned threw: {e.Message}"); }
+        }
+        return true;
     }
 
     void Update()
@@ -45,7 +67,8 @@ public class EnemyController : MonoBehaviour, IDamageable
 
         if (behavior != null)
         {
-            behavior.Tick(this, Time.deltaTime);
+            try { behavior.Tick(this, Time.deltaTime); }
+            catch (System.Exception e) { Debug.LogError($"Behavior Tick threw: {e.Message}"); }
         }
 
         if (attackTimer > 0f) attackTimer -= Time.deltaTime;
@@ -53,7 +76,10 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     void OnDisable()
     {
-        if (behavior != null) behavior.OnDespawned(this);
+        if (behavior != null)
+        {
+            try { behavior.OnDespawned(this); } catch { }
+        }
     }
 
     public void TriggerAttack()
@@ -65,6 +91,8 @@ public class EnemyController : MonoBehaviour, IDamageable
         if (CurrentTarget == null) return;
 
         Vector2 dir = TargetingService.DirectionTo(Position, CurrentTarget);
+        if (dir.sqrMagnitude < 0.0001f) return;
+
         Damage dmg = new Damage
         {
             amount = Data.contactDamage,
@@ -79,12 +107,25 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     private void FireProjectile(Vector2 direction, Damage damage)
     {
+        if (Data == null) return;
         if (Data.projectilePrefab == null) return;
         if (direction.sqrMagnitude < 0.0001f) direction = Vector2.right;
 
-        GameObject go = Object.Instantiate(Data.projectilePrefab, (Vector2)transform.position + direction, Quaternion.identity);
+        GameObject go;
+        try
+        {
+            go = Object.Instantiate(Data.projectilePrefab, (Vector2)transform.position + direction, Quaternion.identity);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Projectile instantiate failed: {e.Message}");
+            return;
+        }
+        if (go == null) return;
+
         Projectile p = go.GetComponent<Projectile>();
         if (p == null) p = go.AddComponent<Projectile>();
+        if (p == null) return;
         p.Launch(transform.position, direction, 8f, 4f, damage);
     }
 
@@ -97,15 +138,19 @@ public class EnemyController : MonoBehaviour, IDamageable
 
     public void OnKilled(GameObject source)
     {
-        if (XPHandler.Instance != null)
+        if (Data != null && Data.xpReward > 0 && XPHandler.Instance != null)
         {
-            XPHandler.Instance.Award(Data.xpReward, transform.position);
+            try { XPHandler.Instance.Award(Data.xpReward, transform.position); }
+            catch (System.Exception e) { Debug.LogError($"XPHandler.Award threw: {e.Message}"); }
         }
-        if (LootService.Instance != null)
+
+        if (Data != null && LootService.Instance != null)
         {
-            LootService.Instance.TryDrop(Data, transform.position);
+            try { LootService.Instance.TryDrop(Data, transform.position); }
+            catch (System.Exception e) { Debug.LogError($"LootService.TryDrop threw: {e.Message}"); }
         }
-        Object.Destroy(gameObject);
+
+        try { Object.Destroy(gameObject); } catch { }
     }
 
     private IEnemyBehavior ResolveBehavior(string id)

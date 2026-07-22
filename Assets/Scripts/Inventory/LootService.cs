@@ -12,5 +12,6 @@ public class LootService : MonoBehaviour
 
     public void TryDrop(EnemyData source, Vector3 origin)
     {
+        if (source == null) return;
     }
 }

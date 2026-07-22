@@ -13,9 +13,7 @@ public class XPHandler : MonoBehaviour
     public void Award(int amount, Vector3 origin)
     {
         if (amount <= 0) return;
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.AwardMetaXp(amount);
-        }
+        if (GameManager.Instance == null) return;
+        GameManager.Instance.AwardMetaXp(amount);
     }
 }

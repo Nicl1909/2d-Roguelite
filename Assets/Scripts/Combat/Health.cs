@@ -20,9 +20,9 @@ public class Health : MonoBehaviour, IDamageable
 
     public void Configure(float max, float invuln = 0.25f)
     {
-        maxHealth = max;
-        currentHealth = max;
-        invulnSeconds = invuln;
+        maxHealth = max > 0 ? max : 1;
+        currentHealth = maxHealth;
+        invulnSeconds = invuln > 0 ? invuln : 0f;
         invulnUntil = 0f;
         dead = false;
     }
@@ -39,11 +39,8 @@ public class Health : MonoBehaviour, IDamageable
         if (dead) return;
         if (Time.time < invulnUntil) return;
 
-        float effective = damage.amount;
-        if (damage.type == DamageType.True)
-        {
-            effective = damage.amount;
-        }
+        float effective = damage.type == DamageType.True ? damage.amount : damage.amount;
+        if (effective < 0f) effective = 0f;
 
         currentHealth -= effective;
         invulnUntil = Time.time + invulnSeconds;
@@ -61,27 +58,42 @@ public class Health : MonoBehaviour, IDamageable
         EnemyController ec = GetComponent<EnemyController>();
         if (ec != null)
         {
-            ec.OnKilled(source);
+            try { ec.OnKilled(source); }
+            catch (System.Exception e) { Debug.LogError($"EnemyController.OnKilled threw: {e.Message}"); }
             return;
         }
 
-        if (gameObject.CompareTag("Player"))
+        bool isPlayer = false;
+        try { isPlayer = gameObject.CompareTag("Player"); } catch { }
+        if (isPlayer)
         {
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.SetState(GameState.Death);
+                try { GameManager.Instance.SetState(GameState.Death); }
+                catch (System.Exception e) { Debug.LogError($"SetState(Death) threw: {e.Message}"); }
             }
         }
 
-        Destroy(gameObject);
+        try { Destroy(gameObject); } catch { }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!gameObject.CompareTag("Player")) return;
+        if (other == null) return;
+        bool isPlayer = false;
+        try { isPlayer = gameObject.CompareTag("Player"); } catch { }
+        if (!isPlayer) return;
+
         EnemyContactDamage c = other.GetComponent<EnemyContactDamage>();
         if (c == null) return;
-        Damage d = new Damage { amount = c.ContactDamage, type = DamageType.Physical, crit = false, source = gameObject };
+
+        Damage d = new Damage
+        {
+            amount = c.ContactDamage,
+            type = DamageType.Physical,
+            crit = false,
+            source = gameObject
+        };
         ApplyDamage(d);
     }
 }

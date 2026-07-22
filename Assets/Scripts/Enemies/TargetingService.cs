@@ -11,10 +11,22 @@ public static class TargetingService
 {
     public static Transform FindTarget(Vector2 from, float maxRadius, TargetingMode mode)
     {
+        if (maxRadius <= 0f) return null;
+
         float bestValue = mode == TargetingMode.Nearest ? float.MaxValue : float.MinValue;
         Transform best = null;
 
-        GameObject[] candidates = GameObject.FindGameObjectsWithTag("Player");
+        GameObject[] candidates;
+        try
+        {
+            candidates = GameObject.FindGameObjectsWithTag("Player");
+        }
+        catch (UnityException)
+        {
+            return null;
+        }
+        if (candidates == null) return null;
+
         for (int i = 0; i < candidates.Length; i++)
         {
             GameObject go = candidates[i];
@@ -49,6 +61,7 @@ public static class TargetingService
     public static bool InAggro(Vector2 from, Transform target, float radius)
     {
         if (target == null) return false;
+        if (radius <= 0f) return false;
         return Vector2.Distance(from, target.position) <= radius;
     }
 

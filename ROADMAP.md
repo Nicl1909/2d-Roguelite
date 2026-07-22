@@ -45,12 +45,16 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 
 ## Phase 3 — Dungeon / waves / boss
 
-- [ ] `Room` data: size, enemy roster, spawn points
-- [ ] Wave manager: spawn N enemies → wait for clear → next wave
-- [ ] `DungeonDirector`: `Room → Room → Boss room` flow, branches or fixed
-- [ ] `Boss` MonoBehaviour: phase transitions at HP thresholds
-- [ ] Difficulty scaling per room index (HP×, DMG×, spawn count+)
-- [ ] Drop table per enemy + per room
+- [x] `Room` data structure (id, kind, waves, boss, spawn points)
+- [x] `Room` + `Wave` + `SpawnPoint` + `BossData` value objects in `Assets/Scripts/Dungeon/`
+- [x] `RoomSet` ScriptableObject holding a list of rooms + boss catalog
+- [x] `DifficultyCurve` ScriptableObject (hp / dmg / spawn multipliers by room index)
+- [x] `WaveRunner` MonoBehaviour: spawn N enemies → wait for clear → next wave
+- [x] `RoomDirector` orchestrator: `Room → Room → Boss → Reward` flow
+- [x] `BossController` MonoBehaviour with HP-threshold phase transitions
+- [x] `DungeonEvents` static bus (`OnRoomStarted`, `OnRoomCleared`, `OnBossKilled`, `OnBossPhaseChanged`)
+- [x] Per-room deterministic spawn via run's `RunRng`
+- [ ] Drop table per enemy / per room — kicked forward to Phase 4 (Loot & items)
 
 ## Phase 4 — Loot & items
 
@@ -87,6 +91,17 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 - Art, animation, VFX beyond placeholders
 - Localization
 - Build / CI / test harness (see `AGENTS.md`)
+
+## Cross-cutting — robustness (added mid-Phase-3)
+
+- [x] `SaveManager` try/catch around all IO (`File.WriteAllText`, `File.Delete`, `File.Exists`); ignores `UnauthorizedAccessException` / `IOException` instead of crashing
+- [x] `SaveManager.SaveCharacterData(...)/HasSave()/DeleteSave()` now return `bool` so callers can react
+- [x] `SaveManager.LoadCharacterData` swallows deserialize errors, returns `null`
+- [x] `EnemyController.Initialize` returns `bool`, refuses null `EnemyData`
+- [x] All service calls (`XPHandler`, `LootService`, `GameManager.Instance`) null-checked
+- [x] `Tag comparison` wrapped in try/catch (Unity throws on undeclared tags)
+- [x] `TargetingService.FindTarget` catches `UnityException` if "Player" tag doesn't exist
+- [x] `SpawnOne` falls back to seeded random offsets if `SpawnPoint`s are absent
 
 ## Open questions for the user
 
