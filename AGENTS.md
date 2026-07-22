@@ -43,8 +43,10 @@ Assets/
                   ChargerBehavior, ShooterBehavior, SummonerBehavior, TurretBehavior
     Dungeon/      Room, RoomSet, BossData, DifficultyCurve, WaveRunner,
                   BossController, RoomDirector, DungeonEvents
-    Inventory/    LootService            (Phase 4 stub)
-    Progression/  XPHandler              (exists, forwards XP → GameManager)
+    Items/        Rarity, WeaponType, ArmorSlot, ItemEnums, ItemInstance,
+                  ModifierData, ModifierGenerator, DropTable
+    Inventory/    LootService, Inventory, LootInventoryBridge
+    Progression/  XPHandler              (forwards XP → GameManager)
     SaveSystem/   SaveManager            (System.Text.Json inside)
   ScriptableObjects/
     EnemyData.cs

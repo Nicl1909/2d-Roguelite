@@ -8,43 +8,16 @@ public class WeaponData : ScriptableObject
     public float attackRange;
     public float attackTime;
     public float attackCoodown;
-    
-      
+
     public float attackKnockback;
     public DamageType damageType;
-    
+
     public WeaponType weaponType;
-    public WeaponRarity weaponRarity;
+    public Rarity weaponRarity;
     public Sprite weaponIcon;
 
-
-    public enum WeaponType
-    {
-        Sword,
-        Bow,
-        Staff,
-        Dagger,
-        Axe,
-        Spear
-    }
-    public enum DamageType
-
-    {
-        Physical,
-        magical,
-        Fire,
-        Ice,
-        Lightning
-        
-    }
-
-    public enum WeaponRarity
-    {
-        Common,
-        Uncommon,
-        Rare,
-        Epic,
-        Legendary,
-        Mythic
-    }
+    [Header("Loot")]
+    public int baseValue = 10;
+    public int statBudget = 1;
+    public ModifierData[] modifierPool;
 }

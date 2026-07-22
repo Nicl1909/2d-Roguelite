@@ -14,4 +14,5 @@ public class EnemyData : ScriptableObject
     public GameObject enemyPrefab;
     public int xpReward;
     public EnemyData summonData;
+    public DropTable dropTable;
 }

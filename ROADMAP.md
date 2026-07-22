@@ -54,16 +54,20 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 - [x] `BossController` MonoBehaviour with HP-threshold phase transitions
 - [x] `DungeonEvents` static bus (`OnRoomStarted`, `OnRoomCleared`, `OnBossKilled`, `OnBossPhaseChanged`)
 - [x] Per-room deterministic spawn via run's `RunRng`
-- [ ] Drop table per enemy / per room — kicked forward to Phase 4 (Loot & items)
+- [x] Drop table per enemy / per room — wired into Phase 4 (`EnemyData.dropTable`)
 
 ## Phase 4 — Loot & items
 
-- [ ] `ItemData` ScriptableObject (base stats + modifier slots)
-- [ ] `Rarity` enum: Common / Rare / Epic / Legendary (color + stat budget)
-- [ ] Modifier generator: pool of affixes, roll N from pool
-- [ ] Drop resolver: enemy/room → weighted item roll
-- [ ] `Inventory` runtime store; equip at most N items per slot
-- [ ] Recycle / sell flow between runs
+- [x] `Rarity` enum (Common / Uncommon / Rare / Epic / Legendary / Mythic) + `RarityUtility` (color, stat budget, sell value)
+- [x] `WeaponType` and `ArmorSlot` enums lifted out of `WeaponData` / `ArmorData` (fixes nested-enum collision with Combat's `DamageType`)
+- [x] `ModifierData` SO (stat / min / max / weight / slot)
+- [x] `ModifierGenerator.Roll(pool, budget, rng)` weighted affix roller
+- [x] `DropTable` SO with weighted `(item, rarity)` entries + nothing-weight
+- [x] `ItemInstance` runtime record (kind / rarity / modifiers / source reference)
+- [x] `LootService.TryDrop(...)` consumes `EnemyData.dropTable`, deterministic via run's RNG
+- [x] `Inventory` runtime store + `EquipSlots` per-slot equip model
+- [x] `LootInventoryBridge` subscribes to `OnItemDropped` and pushes to inventory
+- [x] Recycle / sell flow: `Inventory.Recycle(item)` → `GameManager.AwardMetaXp(value)`
 
 ## Phase 5 — Progression
 

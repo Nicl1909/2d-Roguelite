@@ -1,6 +1,6 @@
 # 2D Roguelite
 
-> Unity 2D Archero-style roguelite. Phases 0–3 implemented (state machine, combat core, enemies, dungeon/waves/boss); 4–6 still open.
+> Unity 2D Archero-style roguelite. Phases 0–4 implemented (state machine, combat core, enemies, dungeon/waves/boss, loot & items); 5–6 still open.
 
 ## Status
 
@@ -10,7 +10,7 @@
 | 1 | Combat core (damage / projectiles) | done |
 | 2 | Enemies (AI archetypes) | done |
 | 3 | Dungeon / waves / boss | done |
-| 4 | Loot & items | stub only |
+| 4 | Loot & items | done |
 | 5 | Progression / meta upgrades | stub only |
 | 6 | UI / HUD | not started |
 
@@ -59,7 +59,9 @@ Assets/
                   ChargerBehavior, ShooterBehavior, SummonerBehavior, TurretBehavior
     Dungeon/      Room, RoomSet, BossData, DifficultyCurve, WaveRunner,
                   BossController, RoomDirector, DungeonEvents
-    Inventory/    LootService                (Phase 4 stub)
+    Items/        Rarity, WeaponType, ArmorSlot, ItemEnums, ItemInstance,
+                  ModifierData, ModifierGenerator, DropTable
+    Inventory/    LootService, Inventory, LootInventoryBridge
     Progression/  XPHandler                  (forwards XP → GameManager)
     SaveSystem/   SaveManager                (System.Text.Json inside)
     Player/       Player, PlayerController, Weapon/Attack   ← OUT OF SCOPE
@@ -123,6 +125,8 @@ Runs continue even if a single system fails — errors are logged via `Debug.Log
 4. Spawn enemies with `EnemyFactory.Spawn(data, position, runRng)` — pass the run's `RunRng` so spawns stay deterministic.
 5. Trigger a room with `RoomDirector.StartRoomForCurrentRun()` via `GameManager.SetState(GameState.Dungeon)`.
 6. Persist data through `SaveManager.SaveCharacterData(...)`; don't write to `Application.persistentDataPath` directly.
+7. Generate loot with `LootService.RollInstance(dropTable, runRng)`; subscribe to `LootService.OnItemDropped` to handle new `ItemInstance` rolls.
+8. Equip / recycle via `Inventory.Instance.Equip(item)` / `Inventory.Instance.Recycle(item)`.
 
 ## Don'ts
 
