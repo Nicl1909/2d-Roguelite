@@ -14,29 +14,34 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 - [x] Run end: death → reward screen → back to MainMenu
 - [x] Save/load hooks: persist `currentRunSeed`, `characterLevel`, `metaXp` after each phase transition
 - [x] `SceneLoader` wires state enum → Unity scene load
+- [x] `RunRng` seeded RNG so runs are reproducible
+- [x] Save logic consolidated into `SaveManager`; `SaveData.cs` removed
 
 ## Phase 1 — Combat core
 
-- [ ] `Damage` struct (amount, type, crit, source, target tags)
-- [ ] `DamageType` enum (Physical / Magic / True)
-- [ ] `IDamageable` interface → implemented by Player + Enemy
-- [ ] `Health` MonoBehaviour: current, max, regen, shield, invuln frames
-- [ ] `Projectile` (parabolic + straight variants); share `Damage` payload
-- [ ] Hit detection: layer/tag filtering, ignore trigger-on-trigger
-- [ ] Death routing: enemies raise `OnDeath` → loot/exp handlers
-- [ ] Archero signature: **charge delay then auto-fire toward nearest enemy**
+- [x] `Damage` struct (amount, type, crit, source, target tags)
+- [x] `DamageType` enum (Physical / Magic / True)
+- [x] `IDamageable` interface → implemented by Player + Enemy
+- [x] `Health` MonoBehaviour: current, max, invuln frames, link to controller
+- [x] `Projectile` MonoBehaviour: straight launch + lifetime, contacts `IDamageable` on overlap
+- [x] Contact damage via `EnemyContactDamage` + `Health.OnTriggerEnter2D`
+- [ ] Hit filtering polish (layer mask, projectile immune-on-self) — pending scene work
+- [ ] Archero signature: **charge delay then auto-fire toward nearest enemy** — pending PlayerController rewrite (out of scope)
+- [x] Death routing: enemies raise `OnKilled` → XP/Loot services
 
 ## Phase 2 — Enemies
 
-- [ ] `EnemyData` ScriptableObject: hp, dmg, speed, attackInterval, projectilePrefab, sprite
-- [ ] `EnemyController` base: idle / move / attack states
-- [ ] Behavior archetypes (each is a small class, not config bloat):
-  - [ ] Charger (walks at player, melee)
-  - [ ] Shooter (strafes, fires projectile)
-  - [ ] Summoner (spawns weaker add)
-  - [ ] Turret (rooted, high-range burst)
-- [ ] Targeting: nearest / furthest/aggro-leash distance
-- [ ] Contact damage (player touch = damage, brief i-frames)
+- [x] `EnemyData` ScriptableObject: hp, dmg, speed, attackInterval, projectilePrefab, aggroRadius
+- [x] `EnemyController` MonoBehaviour: state machine + behaviour delegate, ReadOnly intent output
+- [x] Behavior archetypes (small strategy classes, not config bloat):
+  - [x] Charger (walks at player, melee)
+  - [x] Shooter (strafes, fires projectile)
+  - [x] Summoner (spawns weaker add, seedable)
+  - [x] Turret (rooted, high-range burst)
+- [x] Targeting: nearest / furthest / lowestHealth via `TargetingService`
+- [x] Aggro-leash distance per behavior
+- [x] Contact damage (`EnemyContactDamage`)
+- [x] `EnemyFactory.Spawn(data, pos, rng)` — deterministic spawn
 
 ## Phase 3 — Dungeon / waves / boss
 

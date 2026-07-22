@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
             saveManager = FindFirstObjectByType<SaveManager>();
         }
 
-        CharacterData loaded = saveManager != null ? saveManager.GetCharacterData() : null;
+        CharacterData loaded = saveManager != null ? saveManager.LoadCharacterData() : null;
         if (loaded == null)
         {
             loaded = NewDefaultCharacter();
@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
                     pendingCharacter.characterExperience += metaXpCache;
                     pendingCharacter.characterLevel = ComputeLevel(pendingCharacter.characterExperience);
                     metaXpCache = 0;
-                    saveManager.SaveCharacter(pendingCharacter);
+                    saveManager.SaveCharacterData(pendingCharacter);
                 }
                 break;
         }

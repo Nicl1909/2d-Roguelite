@@ -33,22 +33,30 @@ If a build error references the csproj, it's stale. Let Unity regenerate it (Rei
 Assets/
   Scenes/         Boot, MainMenu, Dungeon, SampleScene
   Scripts/
-    Core/         GameBootManager, GameManager, SceneLoader
-    Player/       Player, PlayerController, Weapon/Attack
+    Core/         GameBootManager, GameManager, SceneLoader, GameState, GameEvents,
+                  RunContext, RunRng
+    Player/       Player, PlayerController, Weapon/Attack   ← OUT OF SCOPE
     Character/    CharacterData (POCO stats)
-    SaveSystem/   SaveData (I/O), SaveManager (MonoBehaviour wrapper)
+    Combat/       Damage, DamageType, Health, Projectile
+    Enemies/      EnemyController, EnemyFactory, EnemyContactDamage,
+                  IEnemyBehavior, EnemyArchetype, TargetingService,
+                  ChargerBehavior, ShooterBehavior, SummonerBehavior, TurretBehavior
+    Inventory/    LootService  (Phase 4 stub)
+    Progression/  XPService    (Phase 5 stub)
+    SaveSystem/   SaveManager   (single file; System.Text.Json inside)
   ScriptableObjects/   EnemyData, Items/WeaponData, Items/ArmorData
   Settings/       URP renderer, input actions, volume profile
 ```
 
 ## Save system — gotcha
 
-`Assets/Scripts/SaveSystem/SaveData.cs` uses **`System.Text.Json`** (not Unity's `JsonUtility`). Both work, but agents default to `JsonUtility`. Read the existing file first before "fixing" it.
+The repo uses **`System.Text.Json`** (not Unity's `JsonUtility`). Both work; agents default to `JsonUtility`. Don't "modernize" the save to `JsonUtility` without asking.
 
-API surface:
-- `SaveData.SaveCharacterData(CharacterData)` — writes to `Application.persistentDataPath/characterData.json`
-- `SaveData.LoadCharacterData()` — returns `CharacterData` or `null` if no save exists
-- `SaveManager.GetCharacterData()` / `SaveCharacter(...)` — MonoBehaviour wrappers; must be assigned a `SaveData` instance in the Inspector (currently it's `public SaveData saveData;` and unresolved → will be null at runtime until the user wires it up in a scene).
+API surface (single class now):
+- `SaveManager.LoadCharacterData()` — returns `CharacterData` or `null` if no save exists
+- `SaveManager.SaveCharacterData(CharacterData)` — writes to `Application.persistentDataPath/characterData.json`
+- `SaveManager.HasSave()` / `DeleteSave()` — convenience
+- `GameManager.Instance` auto-resolves `SaveManager` via `FindFirstObjectByType<SaveManager>()` if not wired in the Inspector.
 
 ## Style / workflow conventions
 
@@ -56,7 +64,7 @@ API surface:
 - No formatter / linter configured. Trust the C# defaults.
 - C# language version is 9.0 (Unity-set), regardless of LangVersion hint in the csproj — avoid C# 10+ features (file-scoped namespaces, raw strings, etc.) except where the existing code already uses them.
 - ScriptableObject data classes (`EnemyData`, `WeaponData`, `ArmorData`) exist but have **no `.asset` instances** yet — they're skeletons for later content.
-- `Player.cs` and `GameManager.cs` are empty stubs. Don't assume they have logic.
+- `Player.cs`, `PlayerController.cs`, and `Attack.cs` are out of scope: movement/attack input is owned by another contributor. Don't touch them unless explicitly asked.
 
 ## Test / lint
 

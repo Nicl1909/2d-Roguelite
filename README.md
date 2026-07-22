@@ -1,17 +1,17 @@
 # 2D Roguelite
 
-> Unity 2D Archero-style roguelite. Currently ~Phase 0 (state machine & lifecycle).
+> Unity 2D Archero-style roguelite. Phases 0–2 implemented (state machine, combat core, enemies); 3–6 still open.
 
 ## Status
 
 | Phase | Topic | Status |
-|-------|-------|------|
+|-------|-------|-----|
 | 0 | State machine & run lifecycle | done |
-| 1 | Combat core (damage / projectiles) | not started |
-| 2 | Enemies (AI archetypes) | not started |
+| 1 | Combat core (damage / projectiles) | done |
+| 2 | Enemies (AI archetypes) | done |
 | 3 | Dungeon / waves / boss | not started |
-| 4 | Loot & items | not started |
-| 5 | Progression / meta upgrades | not started |
+| 4 | Loot & items | stub only |
+| 5 | Progression / meta upgrades | stub only |
 | 6 | UI / HUD | not started |
 
 Full checklist: see [`ROADMAP.md`](ROADMAP.md).
@@ -21,7 +21,7 @@ Agent guidance: see [`AGENTS.md`](AGENTS.md).
 
 - Unity **6000.5.4f1**
 - URP 2D (`com.unity.render-pipelines.universal`)
-- Input System **1.19.0** (new Input System — old `Input.GetKeyDown` will not fire)
+- Input System **1.19.0** (new Input System — `Input.GetKeyDown` will not fire)
 - JetBrains Rider (recommended) via `com.unity.ide.rider`
 - C# 9.0
 - Save/load: `System.Text.Json` → `Application.persistentDataPath/characterData.json`
@@ -30,7 +30,7 @@ Agent guidance: see [`AGENTS.md`](AGENTS.md).
 
 1. Unity Hub → Editor **6000.5.4f1** → open this folder.
 2. Or open `2d-Roguelite.slnx` in Rider (auto-detected Unity project).
-3. To play: open `Assets/Scenes/Boot.unity` →  Play.
+3. To play: open `Assets/Scenes/Boot.unity` → ▶ Play.
    Or from VS Code use the **"Attach to Unity"** debug config.
 
 There is no CLI build or test runner — verification is in the Editor.
@@ -39,21 +39,36 @@ There is no CLI build or test runner — verification is in the Editor.
 
 This codebase is **game logic only**. It does **not** include:
 
--  Movement code (input, dash, knockback, AI navigation)
--  Scene wiring in the Editor (GameObject composition, prefab setup, UI canvas wiring)
--  Art, animation, VFX
+- Movement code (input, dash, knockback, AI navigation)
+- Scene wiring in the Editor (GameObject composition, prefab setup, UI canvas wiring)
+- Art, animation, VFX
 
-Those are owned by other contributors / workstreams. The scripts you will find here describe **what** the game does on a system level, not the per-frame input or render side.
+Movement / scene wiring / art are owned by other contributors. The scripts here describe **what** the system does, not the per-frame input or render side.
 
 ### What *is* here
 
-- `Assets/Scripts/Core/` — game state machine, game manager, scene-load glue
-- `Assets/Scripts/SaveSystem/` — JSON read/write of `CharacterData`
-- `Assets/Scripts/Character/` — `CharacterData` POCO (stats)
-- `Assets/Scripts/Player/`, `Assets/Player/Weapon/` — **out of scope**: pre-existing movement/attack code. Tangentially referenced by logic but not modified here.
-- `Assets/ScriptableObjects/` — content skeletons (`EnemyData`, `WeaponData`, `ArmorData`). No `.asset` instances yet.
+```
+Assets/
+  Scripts/
+    Core/         GameManager, GameState, GameEvents, RunContext, RunRng,
+                  GameBootManager, SceneLoader
+    Character/    CharacterData (POCO stats)
+    Combat/       Damage, DamageType, Health, Projectile
+    Enemies/      EnemyController, EnemyFactory, EnemyContactDamage,
+                  IEnemyBehavior, EnemyArchetype, TargetingService,
+                  ChargerBehavior, ShooterBehavior, SummonerBehavior, TurretBehavior
+    Inventory/    LootService                (Phase 4 stub)
+    Progression/  XPService                  (Phase 5 stub)
+    SaveSystem/   SaveManager                (System.Text.Json inside)
+    Player/       Player, PlayerController, Weapon/Attack   ← OUT OF SCOPE
+  ScriptableObjects/
+    EnemyData.cs
+    Items/        WeaponData.cs, ArmorData.cs, Weapon.asset
+  Scenes/         Boot, MainMenu, Dungeon, SampleScene
+  Settings/       URP renderer, input actions, volume profile
+```
 
-## Architecture (one diagram)
+## Architecture
 
 ```
             ┌─────────────────────────────────────┐
@@ -68,38 +83,36 @@ Those are owned by other contributors / workstreams. The scripts you will find h
                   │ events                     │ reads/writes
                   ▼                           ▼
             ┌────────────┐              ┌────────────┐
-            │SceneLoader │              │ SaveManager│ ──▶ SaveData ──▶ .json
+            │SceneLoader │              │ SaveManager│ ──▶ .json
             └─────┬──────┘              └────────────┘
                   │ SceneManager.LoadScene(...)
                   ▼
          MainMenu / Dungeon scenes
 ```
 
-State transitions flow:
+State transitions:
 
 ```
-Boot ──▶ MainMenu ──▶ Dungeon ──▶ Reward ──▶ Dungeon (next room)
-                   ▲                          │
-                   └──────── Death ◀──────────┘
+Boot ─▶ MainMenu ─▶ Dungeon ─▶ Reward ─▶ Dungeon (next room)
+                 ▲                          │
+                 └──────── Death ◀──────────┘
 ```
 
 Each `→ Reward`, `→ Death`, `→ MainMenu` triggers a save flush.
 
 ## How to extend
 
-To add a new phase or system:
-
 1. Add an entry to `GameState` if a new top-level state is needed.
 2. Drive state via `GameManager.Instance.SetState(GameState.X)` — never poke the field.
 3. Subscribe to `GameEvents.OnStateChanged` if you need to react (e.g. to load a scene).
-4. Persist data through `SaveManager.SaveCharacter(...)`; don't write to `Application.persistentDataPath` directly.
+4. Spawn enemies with `EnemyFactory.Spawn(data, position, runRng)` — pass the run's `RunRng` so spawns stay deterministic.
+5. Persist data through `SaveManager.SaveCharacterData(...)`; don't write to `Application.persistentDataPath` directly.
 
 ## Don'ts
 
-These match `AGENTS.md` and are easy mistakes in this codebase:
-
-- **Don't** edit `Assembly-CSharp.csproj` — it's regenerated by Unity on every script edit.
-- **Don't** add `using NUnit.Framework;` to runtime code (test-only reference).
-- **Don't** use `Input.GetKeyDown` / `Input.GetAxisRaw`. The new Input System is active.
+- **Don't** edit `Assembly-CSharp.csproj` — regenerated by Unity on every script edit.
+- **Don't** add `using NUnit.Framework;` to runtime code.
+- **Don't** use `Input.GetKeyDown` / `Input.GetAxisRaw` — the new Input System is enabled.
 - **Don't** hand-write JSON with `JsonUtility`; this repo uses `System.Text.Json`.
+- **Don't** touch `Assets/Scripts/Player/` — owned by another contributor.
 - **Don't** auto-commit. There is no CI; commits happen on explicit request.
