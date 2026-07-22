@@ -30,7 +30,7 @@ Agent guidance: see [`AGENTS.md`](AGENTS.md).
 
 1. Unity Hub → Editor **6000.5.4f1** → open this folder.
 2. Or open `2d-Roguelite.slnx` in Rider (auto-detected Unity project).
-3. To play: open `Assets/Scenes/Boot.unity` → ▶ Play.
+3. To play: open `Assets/Scenes/Boot.unity` →  Play.
    Or from VS Code use the **"Attach to Unity"** debug config.
 
 There is no CLI build or test runner — verification is in the Editor.
