@@ -36,6 +36,8 @@ public class DungeonSceneBootstrap : MonoBehaviour
             cam.transform.position = new Vector3(0f, 0f, -10f);
         }
 
+        cam.gameObject.AddComponent<CameraFollow>();
+
         BuildGrid();
         BuildServices();
         BuildPlayer();

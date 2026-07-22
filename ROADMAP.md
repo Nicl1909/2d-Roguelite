@@ -71,30 +71,32 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 
 ## Phase 5 — Progression
 
-- [ ] XP / level curve table (`LevelCurve` SO)
-- [ ] Level-up pickups drop from enemies
-- [ ] Permanent (meta) upgrades: +HP, +DMG, +Crit, etc. — purchased with `metaXp`
-- [ ] Apply meta upgrades at run start
-- [ ] Persist: `characterLevel`, `currentXP`, `metaXp`, owned upgrades
-- [ ] Wire to existing `SaveData` / `CharacterData`
+- [x] `LevelCurve` SO (`baseXpForLevel`, `xpGrowth`)
+- [x] `XPHandler.Award` splits XP → `characterExperience` (level curve) + half meta-XP
+- [x] `GameManager.AwardExperience(...)` and `SpendMetaXp(...)` with `dirty` flag → persist on Reward/Death/MainMenu
+- [x] Permanent meta upgrades: `UpgradeData` SO + `MetaUpgradeService` (purchase + cost curve)
+- [x] Apply meta upgrades at run start via `RunModifierApplier.ResetForRun()` called from `StartNewRun`/`ContinueOrStartNewRun`
+- [x] Persist: `CharacterData.characterName/Level/Health/Mana/Experience/metaXp`, `upgrades[]`
+- [x] Recycle flow: `Inventory.Recycle` → `GameManager.AwardMetaXp` (uses `RunModifierApplier.GetStat` lookup for equipped items)
 
 ## Phase 6 — UI / HUD
 
-- [ ] HUD: HP bar, mana bar, XP bar, wave counter
-- [ ] Reward screen between rooms (3 picks from a generated pool)
-- [ ] Death screen: summary → retry / abandon
-- [ ] Pause / settings overlay
-- [ ] Minimal UI Toolkit or uGUI — pick one and stay consistent
+- [x] `HudBootstrap` runtime canvas (uGUI), survives scenes via `RuntimeInitializeOnLoadMethod`
+- [x] HUD: HP bar, mana bar, XP bar, level readout, room counter, meta-XP readout
+- [x] Death screen: summary + Retry / Quit buttons
+- [x] Main menu: title + START RUN button
+- [x] Reward screen: bonus text + Continue button
+- [x] All UI built in code, no Editor wiring required
 
 ---
 
 ## Out of scope (for now)
 
-- Movement code, dash, dodge — already scaffolded in `PlayerController` / `Attack`
+- Hand-authored art, animations, polished VFX
 - Audio, music, SFX
-- Art, animation, VFX beyond placeholders
 - Localization
 - Build / CI / test harness (see `AGENTS.md`)
+- Editor-side scene wiring (Boot/Dungeon scenes are intentionally empty; the runtime scene bootstrap builds the world)
 
 ## Cross-cutting — robustness (added mid-Phase-3)
 
@@ -106,6 +108,16 @@ Legend: `[ ]` not started · `[x]` done · `[/]` in progress
 - [x] `Tag comparison` wrapped in try/catch (Unity throws on undeclared tags)
 - [x] `TargetingService.FindTarget` catches `UnityException` if "Player" tag doesn't exist
 - [x] `SpawnOne` falls back to seeded random offsets if `SpawnPoint`s are absent
+- [x] `TagManager.asset` seeded with `Player` and `Enemy` tags so `RuntimeInitializeOnLoadMethod` paths don't crash on missing tags
+
+## Player / Scenes — runtime-built (added in final pass)
+
+- [x] `PlayerController` rewritten: dash/move using new InputSystem (`Move`/`Sprint`), Archero-style charge-then-fire auto-aim via `Attack`
+- [x] `Attack` rewrite: hold input → target nearest enemy → burst-shot respecting `WeaponData.attackTime/cooldown/damage/type/range`
+- [x] `CameraFollow` smooth-follows player in Dungeon
+- [x] `DungeonSceneBootstrap`: builds Camera + Tilemap grid + Services (XPHandler, LootService, Inventory, MetaUpgradeService, RoomDirector, HudBootstrap) + Player with default WeaponData + 3 charger enemies around the spawn
+- [x] `RuntimeSpriteFactory`: zero-asset `Sprite` and `Circle` sprites built from `Texture2D.whiteTexture` so no art needed to test
+- [x] `EditorBuildSettings.asset` extended to include `Boot`, `MainMenu`, `Dungeon`, `SampleScene` so `SceneManager.LoadScene("...")` works at runtime
 
 ## Open questions for the user
 
