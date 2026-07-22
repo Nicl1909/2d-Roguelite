@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.IO;
 using System.Text.Json;
-using NUnit.Framework;
 
 public class SaveData
 {
@@ -25,5 +24,21 @@ public class SaveData
         Debug.Log("Saved under"  + filePath);
     }
 
+    public CharacterData LoadCharacterData()
+    {
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning($"Save file not found at {filePath}");
+            return null;
+        }
+
+        string json = File.ReadAllText(filePath);
+        CharacterData characterData = JsonSerializer.Deserialize<CharacterData>(json);
+        
+        Debug.Log($"Loaded Character Data: Name={characterData.characterName}, Level={characterData.characterLevel}, Health={characterData.characterHealth}, Mana={characterData.characterMana}, Experience={characterData.characterExperience}");
+        
+        return characterData;
+    }
 }
+
 

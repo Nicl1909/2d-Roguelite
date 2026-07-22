@@ -7,27 +7,17 @@ public class SaveManager : MonoBehaviour
     // Awake is called when the script instance is being loaded
     void Awake()
     {
-        loadCharacterData();    
+        Debug.Log("SaveManager loaded.");
     }
 
-    public void loadCharacterData()
+    public CharacterData GetCharacterData()
     {
-        string characterName = saveData.characterName;
-        int characterLevel = saveData.characterLevel;
-        float characterHealth = saveData.characterHealth;
-        float characterMana = saveData.characterMana;
-        int characterExperience = saveData.characterExperience;
+        return saveData.LoadCharacterData();
+    }
 
-        CharacterData characterData = new CharacterData
-        {
-            characterName = characterName,
-            characterLevel = characterLevel,
-            characterHealth = characterHealth,
-            characterMana = characterMana,
-            characterExperience = characterExperience
-        };
-
-        Debug.Log($"Loaded Character Data: Name={characterData.characterName}, Level={characterData.characterLevel}, Health={characterData.characterHealth}, Mana={characterData.characterMana}, Experience={characterData.characterExperience}");
+    public void SaveCharacter(CharacterData data)
+    {
+        saveData.SaveCharacterData(data);
     }
 
 }
