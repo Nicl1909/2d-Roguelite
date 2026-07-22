@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviour
     private InputAction inputActionDash;
     
     private Vector2 lastMoveVector;
+    
+    public Animator animator;
+    
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -60,6 +63,11 @@ public class PlayerController : MonoBehaviour
         if (moveVector.x != 0 || moveVector.y != 0)
         {
             lastMoveVector = moveVector;
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
         }
         rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
     }
