@@ -1,11 +1,11 @@
-# Default ignored files
+﻿# Default ignored files
 /shelf/
 /workspace.xml
 # Rider ignored files
 /contentModel.xml
-/projectSettingsUpdater.xml
 /modules.xml
 /.idea.2d-Roguelite.iml
+/projectSettingsUpdater.xml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Ignored default folder with query files
