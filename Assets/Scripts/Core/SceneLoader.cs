@@ -6,11 +6,13 @@ public class SceneLoader : MonoBehaviour
     void OnEnable()
     {
         GameEvents.OnStateChanged += HandleStateChanged;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDisable()
     {
         GameEvents.OnStateChanged -= HandleStateChanged;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void HandleStateChanged(GameState from, GameState to)
@@ -23,6 +25,21 @@ public class SceneLoader : MonoBehaviour
             case GameState.Dungeon:
                 LoadScene("Dungeon");
                 break;
+        }
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "Dungeon")
+        {
+            try
+            {
+                DungeonSceneBootstrap.SpawnDungeonScene(null);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Dungeon bootstrap threw: {e.Message}");
+            }
         }
     }
 

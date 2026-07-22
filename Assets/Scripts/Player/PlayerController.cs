@@ -6,80 +6,103 @@ public class PlayerController : MonoBehaviour
 {
     public Rigidbody2D rigidbody;
     public Attack attack;
-    
-    public float speed;
+
+    public float speed = 5f;
 
     private bool canDash = true;
     private bool isDashing;
-    public float dashingPower;
-    public float dashingTime;
-    public float dashingCooldown;
+    public float dashingPower = 10f;
+    public float dashingTime = 0.2f;
+    public float dashingCooldown = 1f;
 
     private InputAction inputActionMove;
     private InputAction inputActionDash;
-    
-    private Vector2 lastMoveVector;
-    
-    public Animator animator;
-    
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Vector2 lastMoveVector;
+
+    public Animator animator;
+
     void Start()
     {
         inputActionMove = InputSystem.actions.FindAction("Move");
         inputActionDash = InputSystem.actions.FindAction("Sprint");
+        if (inputActionMove == null) Debug.LogError("InputSystem action 'Move' not found.");
+        if (inputActionDash == null) Debug.LogError("InputSystem action 'Sprint' not found.");
+        ApplyEquippedWeapon();
     }
 
-    // Update is called once per frame
     void Update()
     {
-
-        var dashInput = inputActionDash.IsPressed();
-        if (isDashing || attack.GetAttacking())
+        if (attack != null && attack.IsBusy())
         {
             return;
         }
-        
-        if(dashInput && canDash)
+
+        bool dashInput = inputActionDash != null && inputActionDash.IsPressed();
+        if (isDashing) return;
+
+        if (dashInput && canDash)
         {
             StartCoroutine(Dash());
         }
     }
 
-    //Runs 50 times per second
     void FixedUpdate()
     {
-        if (isDashing)
+        if (rigidbody == null) return;
+        if (isDashing) return;
+        if (attack != null && attack.IsBusy())
         {
+            rigidbody.linearVelocity = Vector2.zero;
             return;
         }
-        if(attack.GetAttacking())
-        {
-            rigidbody.linearVelocity = new Vector2(0, 0);
-            return;
-        }
-        
-        var moveVector = inputActionMove.ReadValue<Vector2>();
-        if (moveVector.x != 0 || moveVector.y != 0)
+
+        Vector2 moveVector = inputActionMove != null ? inputActionMove.ReadValue<Vector2>() : Vector2.zero;
+        if (moveVector.sqrMagnitude > 1f) moveVector = moveVector.normalized;
+        if (moveVector.sqrMagnitude > 0.0001f)
         {
             lastMoveVector = moveVector;
-            animator.SetBool("isRunning", true);
+            if (animator != null) animator.SetBool("isRunning", true);
         }
         else
         {
-            animator.SetBool("isRunning", false);
+            if (animator != null) animator.SetBool("isRunning", false);
         }
-        rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
+        rigidbody.linearVelocity = moveVector * speed;
     }
 
     private IEnumerator Dash()
     {
         canDash = false;
         isDashing = true;
-        rigidbody.linearVelocity = lastMoveVector * dashingPower;
+        if (rigidbody != null)
+        {
+            Vector2 dir = lastMoveVector == Vector2.zero ? Vector2.up : lastMoveVector.normalized;
+            rigidbody.linearVelocity = dir * dashingPower;
+        }
         yield return new WaitForSeconds(dashingTime);
         isDashing = false;
         yield return new WaitForSeconds(dashingCooldown);
         canDash = true;
+    }
+
+    public void ApplyEquippedWeapon()
+    {
+        WeaponData weapon = null;
+        if (Inventory.Instance != null)
+        {
+            ItemInstance eq = Inventory.Instance.equipped.Get(EquipSlot.Weapon);
+            if (eq != null) weapon = eq.AsWeapon;
+        }
+
+        if (weapon == null && attack != null)
+        {
+            weapon = attack.runtimeWeapon;
+        }
+
+        if (attack != null)
+        {
+            attack.SetWeapon(weapon);
+        }
     }
 }

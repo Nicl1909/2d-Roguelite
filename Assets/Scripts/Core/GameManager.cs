@@ -5,12 +5,13 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private SaveManager saveManager;
+    [SerializeField] private LevelCurve levelCurve;
 
     public GameState CurrentState { get; private set; } = GameState.Boot;
     public RunContext CurrentRun { get; private set; }
 
     private CharacterData pendingCharacter;
-    private int metaXpCache;
+    private bool dirty;
 
     void Awake()
     {
@@ -29,6 +30,10 @@ public class GameManager : MonoBehaviour
         {
             saveManager = FindFirstObjectByType<SaveManager>();
         }
+        if (levelCurve == null)
+        {
+            levelCurve = Resources.Load<LevelCurve>("LevelCurve");
+        }
 
         CharacterData loaded = saveManager != null ? saveManager.LoadCharacterData() : null;
         if (loaded == null)
@@ -36,7 +41,7 @@ public class GameManager : MonoBehaviour
             loaded = NewDefaultCharacter();
         }
         pendingCharacter = loaded;
-        metaXpCache = 0;
+        dirty = false;
     }
 
     public void SetState(GameState next)
@@ -52,6 +57,7 @@ public class GameManager : MonoBehaviour
     public void StartNewRun(int seed)
     {
         CurrentRun = new RunContext(seed);
+        ApplyMetaModifiersForRun();
         SetState(GameState.Dungeon);
     }
 
@@ -61,7 +67,19 @@ public class GameManager : MonoBehaviour
         {
             CurrentRun = new RunContext(fallbackSeed);
         }
+        ApplyMetaModifiersForRun();
         SetState(GameState.Dungeon);
+    }
+
+    private void ApplyMetaModifiersForRun()
+    {
+        RunModifierApplier applier = null;
+        try { applier = FindFirstObjectByType<RunModifierApplier>(); } catch { }
+        if (applier != null)
+        {
+            try { applier.ResetForRun(); }
+            catch (System.Exception e) { Debug.LogError($"RunModifierApplier.ResetForRun threw: {e.Message}"); }
+        }
     }
 
     public void AdvanceRoom()
@@ -75,7 +93,36 @@ public class GameManager : MonoBehaviour
     public void AwardMetaXp(int amount)
     {
         if (amount <= 0) return;
-        metaXpCache += amount;
+        if (pendingCharacter == null) return;
+        pendingCharacter.metaXp += amount;
+        if (levelCurve != null)
+        {
+            pendingCharacter.characterLevel = levelCurve.LevelFromXp(pendingCharacter.characterExperience);
+        }
+        dirty = true;
+    }
+
+    public bool SpendMetaXp(int amount)
+    {
+        if (amount <= 0) return true;
+        if (pendingCharacter == null) return false;
+        if (pendingCharacter.metaXp < amount) return false;
+        pendingCharacter.metaXp -= amount;
+        dirty = true;
+        return true;
+    }
+
+    public bool AwardExperience(int amount)
+    {
+        if (amount <= 0) return false;
+        if (pendingCharacter == null) return false;
+        pendingCharacter.characterExperience += amount;
+        if (levelCurve != null)
+        {
+            pendingCharacter.characterLevel = levelCurve.LevelFromXp(pendingCharacter.characterExperience);
+        }
+        dirty = true;
+        return true;
     }
 
     public CharacterData GetCharacterSnapshot()
@@ -83,9 +130,12 @@ public class GameManager : MonoBehaviour
         return pendingCharacter;
     }
 
+    public LevelCurve GetLevelCurve() => levelCurve;
+
     private void PersistAfterTransition(GameState from, GameState to)
     {
         if (saveManager == null) return;
+        if (!dirty) return;
 
         switch (to)
         {
@@ -94,18 +144,11 @@ public class GameManager : MonoBehaviour
             case GameState.MainMenu:
                 if (pendingCharacter != null)
                 {
-                    pendingCharacter.characterExperience += metaXpCache;
-                    pendingCharacter.characterLevel = ComputeLevel(pendingCharacter.characterExperience);
-                    metaXpCache = 0;
                     saveManager.SaveCharacterData(pendingCharacter);
+                    dirty = false;
                 }
                 break;
         }
-    }
-
-    private static int ComputeLevel(int xp)
-    {
-        return Mathf.Max(1, xp / 100 + 1);
     }
 
     private static CharacterData NewDefaultCharacter()
@@ -116,7 +159,8 @@ public class GameManager : MonoBehaviour
             characterLevel = 1,
             characterHealth = 100f,
             characterMana = 50f,
-            characterExperience = 0
+            characterExperience = 0,
+            metaXp = 0
         };
     }
 }

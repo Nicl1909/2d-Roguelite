@@ -14,6 +14,7 @@ public class XPHandler : MonoBehaviour
     {
         if (amount <= 0) return;
         if (GameManager.Instance == null) return;
-        GameManager.Instance.AwardMetaXp(amount);
+        GameManager.Instance.AwardExperience(amount);
+        GameManager.Instance.AwardMetaXp(amount / 2);
     }
 }
