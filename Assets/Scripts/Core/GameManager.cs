@@ -68,7 +68,7 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentRun != null)
         {
-            CurrentRun.roomIndex++;
+            CurrentRun.AdvanceRoom();
         }
     }
 
