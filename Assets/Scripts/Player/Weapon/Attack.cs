@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class Attack : MonoBehaviour
 {
@@ -13,11 +14,16 @@ public class Attack : MonoBehaviour
     public float abilityTime;
     public float abilityCooldown;
 
+    
+    private InputAction inputActionAttack;
+    private InputAction inputActionAbility;
     public Transform transform;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        inputActionAttack = InputSystem.actions.FindAction("Attack");
+        inputActionAbility = InputSystem.actions.FindAction("Interact");
         transform = this.transform;
     }
 
@@ -25,19 +31,17 @@ public class Attack : MonoBehaviour
     void Update()
     {
         LAMouse();
-        if(Input.GetMouseButtonDown(0) && canAttack && !isAbilitying)
+        var attackInput = inputActionAttack.IsPressed();
+        var abilityInput = inputActionAbility.IsPressed();
+        
+        if(attackInput && canAttack && !isAbilitying)
         {
             StartCoroutine(Attacking());
         }
-        if (Input.GetMouseButtonDown(1) && canAbility && !isAttacking)
+        if (abilityInput && canAbility && !isAttacking)
         {
             StartCoroutine(Abilitying());
         }
-    }
-
-    public void Rotation(float rot)
-    {
-        transform.eulerAngles = new Vector3(0,0,rot);
     }
 
     private IEnumerator Attacking()
