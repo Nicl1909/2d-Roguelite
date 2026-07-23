@@ -13,25 +13,5 @@ public class SaveData
     public int characterExperience = 0;
     public string characterClass = "Unclassified";
 
-    private string filePath;
-    public SaveData()
-    {
-        filePath = Path.Combine(Application.persistentDataPath, "characterData.json");
-    }
-
-    public void SaveCharacterData(CharacterData characterData)
-    {
-        string json = JsonSerializer.Serialize(characterData, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-
-        File.WriteAllText(filePath, json);
-
-        Debug.Log("Saved under" + filePath);
-    }
-    }
-
->>>>>>> d503fd4d74e71c3972951458102da79a0acfb787
 }
 
