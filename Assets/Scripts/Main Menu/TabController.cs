@@ -8,7 +8,7 @@ public class TabController : MonoBehaviour
     public GameObject[] pages;
     void Start()
     {
-        ActivateTab(2);
+        ActivateTab(1);
     }
 
     // Update is called once per frame

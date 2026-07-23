@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class SaveManager : MonoBehaviour
         filePath = Path.Combine(Application.persistentDataPath, "characterData.json");
         LoadData();
         Debug.Log(filePath);
+        SceneManager.LoadScene("MainMenu");
     }
     public void SaveData()
     {
