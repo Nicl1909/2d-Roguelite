@@ -6,6 +6,7 @@ public class GameBootManager : MonoBehaviour
     void Awake()
     {
         Debug.Log("Booting Game...");
+        
     }
 
 }

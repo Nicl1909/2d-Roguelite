@@ -1,33 +1,35 @@
+using System.IO;
 using UnityEngine;
 
 public class SaveManager : MonoBehaviour
 {
-
-    public SaveData saveData;
+    private string filePath;
     // Awake is called when the script instance is being loaded
     void Awake()
     {
-        loadCharacterData();    
+        filePath = Path.Combine(Application.persistentDataPath, "characterData.json");
+        LoadData();
+        Debug.Log(filePath);
+    }
+    public void SaveData()
+    {
+        string json = JsonUtility.ToJson(new SaveData(), true);
+        File.WriteAllText(filePath, json);
+        Debug.Log("Data Saved: " + json);
     }
 
-    public void loadCharacterData()
+    public void LoadData()
     {
-        string characterName = saveData.characterName;
-        int characterLevel = saveData.characterLevel;
-        float characterHealth = saveData.characterHealth;
-        float characterMana = saveData.characterMana;
-        int characterExperience = saveData.characterExperience;
-
-        CharacterData characterData = new CharacterData
+        if (File.Exists(filePath))
         {
-            characterName = characterName,
-            characterLevel = characterLevel,
-            characterHealth = characterHealth,
-            characterMana = characterMana,
-            characterExperience = characterExperience
-        };
-
-        Debug.Log($"Loaded Character Data: Name={characterData.characterName}, Level={characterData.characterLevel}, Health={characterData.characterHealth}, Mana={characterData.characterMana}, Experience={characterData.characterExperience}");
+            string json = File.ReadAllText(filePath);
+            SaveData charaterData = JsonUtility.FromJson<SaveData>(json);
+        }
+        else
+        {
+            SaveData();
+        }
+        
     }
 
 }
