@@ -25,7 +25,7 @@ public class Attack : MonoBehaviour
     void Start()
     {
         inputActionAttack = InputSystem.actions.FindAction("Attack");
-        inputActionAbility = InputSystem.actions.FindAction("Interact");
+        inputActionAbility = InputSystem.actions.FindAction("Ability");
         animator.SetInteger("Weapon", 0);
         transform = this.transform;
     }

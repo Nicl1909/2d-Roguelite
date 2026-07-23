@@ -268,7 +268,7 @@ MonoBehaviour:
   attackCoodown: 0.3
   isAbilitying: 0
   canAbility: 1
-  abilityTime: 0.1
+  abilityTime: 0.5
   abilityCooldown: 10
   transform: {fileID: 441771152}
   animator: {fileID: 441771156}
