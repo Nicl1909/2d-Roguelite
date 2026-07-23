@@ -70,33 +70,38 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetBool("isRunning", false);
         }
+        moveAnimation(moveVector);
         rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
     }
 
     private void moveAnimation(Vector2 direction)
     {
+        animator.SetBool("isRight", false);
+        animator.SetBool("isLeft", false);
+        animator.SetBool("isUp", false);
+        animator.SetBool("isDown", false);
         float horizontalPercentage = Mathf.Abs(direction.x) / (Mathf.Abs(direction.x) + Mathf.Abs(direction.y));
         float verticalPercentage = Mathf.Abs(direction.y) / (Mathf.Abs(direction.x) + Mathf.Abs(direction.y));
         if (horizontalPercentage >= verticalPercentage)
         {
             if (direction.x > 0)
             {
-                
+                animator.SetBool("isRight", true);
             }
             else
             {
-                
+                animator.SetBool("isLeft", true);
             }
         }
         else
         {
             if (direction.y > 0)
             {
-                
+                animator.SetBool("isUp", true);
             }
             else
             {
-                
+                animator.SetBool("isDown", true);
             }
         }
     }
