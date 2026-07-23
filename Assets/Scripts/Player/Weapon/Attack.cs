@@ -18,12 +18,15 @@ public class Attack : MonoBehaviour
     private InputAction inputActionAttack;
     private InputAction inputActionAbility;
     public Transform transform;
+    
+    public Animator animator;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         inputActionAttack = InputSystem.actions.FindAction("Attack");
         inputActionAbility = InputSystem.actions.FindAction("Interact");
+        animator.SetInteger("Weapon", 0);
         transform = this.transform;
     }
 
@@ -49,7 +52,9 @@ public class Attack : MonoBehaviour
         canAttack = false;
         isAttacking = true;
         
+        animator.SetBool("isAttack", true);
         yield return new WaitForSeconds(attackTime);
+        animator.SetBool("isAttack", false);
         isAttacking = false;
         yield return new WaitForSeconds(attackCoodown);
         canAttack = true;
@@ -60,7 +65,9 @@ public class Attack : MonoBehaviour
         canAbility = false;
         isAbilitying = true;
 
+        animator.SetBool("isAbility", true);
         yield return new WaitForSeconds(abilityTime);
+        animator.SetBool("isAbility", false);
         isAbilitying = false;
         yield return new WaitForSeconds(abilityCooldown);
         canAbility = true;
