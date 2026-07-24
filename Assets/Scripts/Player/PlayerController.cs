@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     {
         inputActionMove = InputSystem.actions.FindAction("Move");
         inputActionDash = InputSystem.actions.FindAction("Sprint");
+        animator.SetBool("isDown", true);
     }
 
     // Update is called once per frame
@@ -37,6 +38,8 @@ public class PlayerController : MonoBehaviour
         
         if (isDashing || attack.GetAttacking())
         {
+            Vector2 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+            moveAnimation(direction);
             return;
         }
         
@@ -51,11 +54,13 @@ public class PlayerController : MonoBehaviour
     {
         if (isDashing)
         {
+            animator.SetBool("isRunning", false);
             return;
         }
         if(attack.GetAttacking())
         {
             rigidbody.linearVelocity = new Vector2(0, 0);
+            animator.SetBool("isRunning", false);
             return;
         }
         
@@ -65,12 +70,13 @@ public class PlayerController : MonoBehaviour
         {
             lastMoveVector = moveVector;
             animator.SetBool("isRunning", true);
+            moveAnimation(moveVector);
         }
         else
         {
             animator.SetBool("isRunning", false);
         }
-        moveAnimation(moveVector);
+        
         rigidbody.linearVelocity = moveVector * (Time.deltaTime * speed);
     }
 
